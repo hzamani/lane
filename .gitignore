@@ -1,0 +1,8 @@
+*.prof
+*.old
+
+lane.test
+
+testdata/enwik8
+testdata/github
+testdata/source

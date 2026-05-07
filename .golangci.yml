@@ -1,0 +1,16 @@
+version: "2"
+
+run:
+  build-tags:
+    - goexperiment.simd
+
+linters:
+  default: standard
+  enable:
+    - gocritic
+    - ineffassign
+    - misspell
+    - nilerr
+    - revive
+    - unconvert
+    - unparam

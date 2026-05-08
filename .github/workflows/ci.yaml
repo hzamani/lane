@@ -1,0 +1,42 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        amd64: [v1, v2, v3]
+        experiment: ['', simd]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.26'
+
+      - name: Check CPU Flags
+        run: lscpu | grep Flags
+
+      - name: Run Tests
+        env:
+          GOAMD64: ${{ matrix.amd64 }}
+          GOEXPERIMENT: ${{ matrix.experiment }}
+        run: go test ./...
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.26'
+
+      - name: Run Linter
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: v2.12

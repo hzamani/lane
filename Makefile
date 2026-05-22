@@ -2,15 +2,16 @@
 
 PATTERN ?= .
 
-GO = GOAMD64=v3 GOEXPERIMENT=simd go
+GO = GOAMD64=v4 GOEXPERIMENT=simd go
 
 GOTEST = $(GO) test -run ^$$
 
 test: FLAGS ?= -count 1
 test:
-	go test ./... $(FLAGS)
-	GOEXPERIMENT=simd go test ./... $(FLAGS)
-	$(GO) test ./... $(FLAGS)
+	GOEXPERIMENT="" GOAMD64="" go test ./... $(FLAGS)
+	GOEXPERIMENT=simd GOAMD64="" go test ./... $(FLAGS)
+	GOEXPERIMENT=simd GOAMD64=v3 go test ./... $(FLAGS)
+	GOEXPERIMENT=simd GOAMD64=v4 go test ./... $(FLAGS)
 
 lint:
 	golangci-lint run ./...

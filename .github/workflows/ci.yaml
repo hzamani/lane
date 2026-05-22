@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        amd64: [v1, v2, v3]
+        amd64: ['', v1, v2, v3, v4]
         experiment: ['', simd]
     steps:
       - uses: actions/checkout@v6
@@ -20,7 +20,13 @@ jobs:
       - name: Check CPU Flags
         run: lscpu | grep Flags
 
+      - name: Check CPU Capability
+        id: cpu-check
+        run: |
+          lscpu | grep -q 'avx512f' && echo "has_v4=true" >> $GITHUB_OUTPUT || echo "has_v4=false" >> $GITHUB_OUTPUT
+
       - name: Run Tests
+        if: matrix.amd64 != 'v4' || steps.cpu-check.outputs.has_v4 == 'true'
         env:
           GOAMD64: ${{ matrix.amd64 }}
           GOEXPERIMENT: ${{ matrix.experiment }}

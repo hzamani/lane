@@ -1,7 +1,8 @@
-//go:build amd64.v3
+//go:build amd64.v3 && !amd64.v4
 
 package lane
 
 const (
-	hasAVX2 = true
+	hasAVX2   = true
+	hasAVX512 = false
 )

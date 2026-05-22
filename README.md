@@ -45,29 +45,29 @@ English text and source code; supply a custom `ByteRanker` for other input distr
 goos: linux
 goarch: amd64
 pkg: github.com/hzamani/lane
-cpu: AMD Ryzen 7 4800HSS with Radeon Graphics
+cpu: AMD Ryzen AI 7 PRO 360 w/ Radeon 880M
         │   bytes.Index    │                BytesIndex                │               BytesFinder                │
         │      sec/op      │     sec/op       vs base                 │     sec/op       vs base                 │
-json      278.55n ±  43% ¹   48.58n ±  29% ¹  -82.56% (p=0.000 n=120)   38.62n ±  43% ¹  -86.14% (p=0.000 n=120)
-code      335.20n ± 418% ¹   64.48n ± 501% ¹  -80.76% (p=0.000 n=120)   55.16n ± 512% ¹  -83.55% (p=0.000 n=120)
-wiki      340.75n ± 105% ¹   52.48n ± 171% ¹  -84.60% (p=0.000 n=120)   41.24n ± 204% ¹  -87.90% (p=0.000 n=120)
-geomean    316.9n            54.78n           -82.71%                   44.45n           -85.97%
+json      158.60n ±  59% ¹   15.04n ±  45% ¹  -90.52% (p=0.000 n=120)   13.60n ±  43% ¹  -91.42% (p=0.000 n=120)
+code      242.90n ± 357% ¹   21.81n ± 458% ¹  -91.02% (p=0.000 n=120)   18.98n ± 462% ¹  -92.19% (p=0.000 n=120)
+wiki      250.40n ±  67% ¹   19.28n ± 144% ¹  -92.30% (p=0.000 n=120)   13.94n ± 223% ¹  -94.43% (p=0.000 n=120)
+geomean    212.9n            18.49n           -91.31%                   15.32n           -92.80%
 ¹ benchmarks vary in .fullname
 
-        │   bytes.Index   │                BytesIndex                 │                BytesFinder                 │
-        │       B/s       │       B/s        vs base                  │       B/s         vs base                  │
-json      18.30Gi ±  6% ¹   78.51Gi ±  5% ¹  +328.93% (p=0.000 n=120)   111.62Gi ± 12% ¹  +509.84% (p=0.000 n=120)
-code      16.02Gi ± 11% ¹   74.38Gi ± 11% ¹  +364.36% (p=0.000 n=120)   105.70Gi ±  4% ¹  +559.95% (p=0.000 n=120)
-wiki      15.64Gi ± 17% ¹   73.90Gi ±  3% ¹  +372.59% (p=0.000 n=120)   103.03Gi ± 10% ¹  +558.88% (p=0.000 n=120)
-geomean   16.61Gi           75.57Gi          +354.89%                    106.7Gi          +542.46%
+        │   bytes.Index   │                 BytesIndex                 │                 BytesFinder                 │
+        │       B/s       │       B/s         vs base                  │       B/s         vs base                   │
+json      33.50Gi ± 24% ¹   239.94Gi ± 14% ¹  +616.29% (p=0.000 n=120)   355.06Gi ± 20% ¹   +959.96% (p=0.000 n=120)
+code      28.93Gi ± 18% ¹   210.04Gi ±  6% ¹  +626.15% (p=0.000 n=120)   327.57Gi ± 11% ¹  +1032.44% (p=0.000 n=120)
+wiki      27.40Gi ± 21% ¹   206.47Gi ± 10% ¹  +653.42% (p=0.000 n=120)   313.28Gi ± 14% ¹  +1043.18% (p=0.000 n=120)
+geomean   29.83Gi            218.3Gi          +631.79%                    331.5Gi          +1011.24%
 ¹ benchmarks vary in .fullname
 ```
 
 Execution variance of finding a 140 bytes needle in 1MB of go source code.
 
 ```txt
-              min    avg    p50     p90     p99   p99.9     max   stddev
-bytes.Index  35µs  492µs  334µs  1256µs  1261µs  1264µs  1264µs  444.8µs
-BytesIndex   70µs   83µs   76µs    96µs   187µs   191µs   191µs   19.8µs
-BytesFinder  64µs   65µs   65µs    66µs    67µs    68µs    68µs    0.8µs
+              min    avg    p50    p90    p99  p99.9    max   stddev
+bytes.Index  19µs  381µs  192µs 1041µs 1598µs 1667µs 1768µs  433.3µs
+BytesIndex   19µs   32µs   29µs   47µs   89µs  133µs  171µs   14.0µs
+BytesFinder  18µs   19µs   18µs   19µs   35µs   61µs   69µs    3.8µs
 ```

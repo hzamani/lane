@@ -12,7 +12,7 @@ import (
 // stencil pair selection.
 func NewBytesFinderBy(needle []byte, ranker ByteRanker) *BytesFinder {
 	f := &BytesFinder{needle: needle}
-	if !hasAVX2 {
+	if !hasAVX512 && !hasAVX2 {
 		f.index = func(haystack []byte) int {
 			return bytes.Index(haystack, f.needle)
 		}
@@ -33,6 +33,46 @@ func NewBytesFinderBy(needle []byte, ranker ByteRanker) *BytesFinder {
 		f.y = 1
 	default:
 		f.x, f.y = ranker.pickTwo(needle)
+	}
+	if hasAVX512 {
+		f.index = func(haystack []byte) int {
+			n := len(f.needle)
+			h := len(haystack)
+			if n >= h {
+				if bytes.Equal(haystack, f.needle) {
+					return 0
+				}
+				return -1
+			}
+			x, y := f.x, f.y
+			nx, ny := f.needle[x], f.needle[y]
+			vx := archsimd.BroadcastUint8x64(nx)
+			vy := archsimd.BroadcastUint8x64(ny)
+			i := 0
+			for i <= h-n-64 {
+				va := archsimd.LoadUint8x64Slice(haystack[i+x:])
+				vb := archsimd.LoadUint8x64Slice(haystack[i+y:])
+				mask := va.Equal(vx).And(vb.Equal(vy)).ToBits()
+				for mask != 0 {
+					pos := i + bits.TrailingZeros64(mask)
+					if bytes.Equal(haystack[pos:pos+n], f.needle) {
+						return pos
+					}
+					mask &= mask - 1
+				}
+				i += 64
+			}
+			for i <= h-n {
+				if haystack[i+x] == nx &&
+					haystack[i+y] == ny &&
+					bytes.Equal(haystack[i:i+n], f.needle) {
+					return i
+				}
+				i++
+			}
+			return -1
+		}
+		return f
 	}
 	f.index = func(haystack []byte) int {
 		n := len(f.needle)
@@ -78,7 +118,7 @@ func NewBytesFinderBy(needle []byte, ranker ByteRanker) *BytesFinder {
 // or -1 if it is not present.
 // Prefer NewBytesFinder for repeated searches on the same needle.
 func BytesIndex(haystack, needle []byte) int {
-	if !hasAVX2 {
+	if !hasAVX512 && !hasAVX2 {
 		return bytes.Index(haystack, needle)
 	}
 	h := len(haystack)
@@ -96,6 +136,33 @@ func BytesIndex(haystack, needle []byte) int {
 		return bytes.IndexByte(haystack, needle[0])
 	default:
 		y = n - 1
+	}
+	if hasAVX512 {
+		vx := archsimd.BroadcastUint8x64(needle[x])
+		vy := archsimd.BroadcastUint8x64(needle[y])
+		i := 0
+		for i <= h-n-64 {
+			va := archsimd.LoadUint8x64Slice(haystack[i+x:])
+			vb := archsimd.LoadUint8x64Slice(haystack[i+y:])
+			mask := va.Equal(vx).And(vb.Equal(vy)).ToBits()
+			for mask != 0 {
+				pos := i + bits.TrailingZeros64(mask)
+				if bytes.Equal(haystack[pos+1:pos+n-1], needle[1:n-1]) {
+					return pos
+				}
+				mask &= mask - 1
+			}
+			i += 64
+		}
+		for i <= h-n {
+			if haystack[i+x] == needle[x] &&
+				haystack[i+y] == needle[y] &&
+				bytes.Equal(haystack[i+1:i+n-1], needle[1:n-1]) {
+				return i
+			}
+			i++
+		}
+		return -1
 	}
 	vx := archsimd.BroadcastUint8x32(needle[x])
 	vy := archsimd.BroadcastUint8x32(needle[y])
